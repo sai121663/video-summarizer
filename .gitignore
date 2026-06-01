@@ -1,0 +1,9 @@
+venv/
+.env
+__pycache__/
+*.pyc
+temp_audio.mp3
+test_tts.py
+node_modules/
+frontend/dist/
+frontend/node_modules/
