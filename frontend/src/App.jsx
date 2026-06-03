@@ -72,7 +72,7 @@ function App() {
       if (!transcript) {
 
         // Get the transcript directly from the browser
-        const transcriptData = await YouTubeTranscript.fetchTranscript(url)
+        const transcriptData = await YoutubeTranscript.fetchTranscript(url)
         transcript = transcriptData.map(entry => entry.text).join(' ')
 
         const videoId = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1]
