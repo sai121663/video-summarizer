@@ -10,6 +10,11 @@ import edge_tts, asyncio, io
 import tempfile
 import subprocess
 
+#
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.proxies import WebshareProxyConfig
+
+
 load_dotenv()
 
 # Creating the Flask server
@@ -28,34 +33,33 @@ def extract_video_id(url):
     # Gets the transcript using YouTubeTranscriptApi library
     # Joins all the transcript chunks into a large string
     # Returns the string as JSON
+
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
-
-    # Get the URL that was entered through the request 
     url = request.args.get('url')
-
-    # Error handling for an empty URL
-    if not url: 
+    
+    if not url:
         return jsonify({'error': 'No URL provided'}), 400
-
-    # Get the video ID for the URL
+    
     video_id = extract_video_id(url)
-
-    # Error handling for an invalid video ID
-    if not video_id: 
+    
+    if not video_id:
         return jsonify({'error': 'Invalid YouTube URL'}), 400
-
-    # Fetch and return the video's transcript 
-    try: 
-        transcript_data = YouTubeTranscriptApi().fetch(video_id)
+    
+    try:
+        ytt_api = YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+                proxy_username="",
+                proxy_password="",
+            )
+        )
+        transcript_data = ytt_api.fetch(video_id)
         full_transcript = ' '.join([entry.text for entry in transcript_data])
-        # return jsonify({'transcript': full_transcript})
         return jsonify({
             'transcript': full_transcript,
             'thumbnail': f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
         })
-
-    except Exception as e: 
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # ENDPOINT #2: Summarize transcript
