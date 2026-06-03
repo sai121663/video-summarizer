@@ -71,7 +71,7 @@ function App() {
 
         // Get the transcript directly from Flask backend
         const transcriptResponse = await fetch(`https://video-summarizer-backend-2jda.onrender.com/transcript?url=${encodeURIComponent(url)}`)
-        const transcriptData = await transcriptRes.json()
+        const transcriptData = await transcriptResponse.json()
 
         if (transcriptData.error) {
           setError(transcriptData.error)
