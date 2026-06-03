@@ -4,6 +4,7 @@ import youtubeLogo from './assets/youtube-logo.png'
 import remarkGfm from 'remark-gfm'
 import '@fontsource/inter'
 import '@fontsource/poppins'
+import { YoutubeTranscript } from 'youtube-transcript'
 
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
   const generateAudio = async (summaryText) => {
 
     // Sends the summary from the /summary endpoint to /speak endpoint
-    const res = await fetch("http://127.0.0.1:5000/speak", {
+    const response = await fetch("https://video-summarizer-backend-2jda.onrender.com/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ summaryText })
@@ -36,10 +37,10 @@ function App() {
     })
 
     // DEBUGGING statements
-    const arrayBuffer = await res.arrayBuffer()
+    const arrayBuffer = await response.arrayBuffer()
     console.log("Audio size: ", arrayBuffer.byteLength)
-    console.log("Status: ", res.status)
-    console.log("Content-Type: ", res.headers.get("content-type"))
+    console.log("Status: ", response.status)
+    console.log("Content-Type: ", response.headers.get("content-type"))
 
     // Convert the raw audio data to an audio player
     const blob = new Blob([arrayBuffer], {type: "audio/mpeg"})
@@ -70,21 +71,17 @@ function App() {
         // Makes it faster if we want to change levels for the same video
       if (!transcript) {
 
-        // Get the transcript
-        const transcriptRes = await fetch(`http://127.0.0.1:5000/transcript?url=${encodeURIComponent(url)}`)
-        const transcriptData = await transcriptRes.json()
+        // Get the transcript directly from the browser
+        const transcriptData = await YouTubeTranscript.fetchTranscript(url)
+        transcript = transcriptData.map(entry => entry.text).join(' ')
 
-        if (transcriptData.error) {
-          setError(transcriptData.error)
-          setLoading(false)
-          return
+        const videoId = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1]
+        if (videoId) {
+          const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+          setThumbnail(thumbnail)
+          setCachedThumbnail(thumbnail) // Saves the thumbnail for the current request
         }
-
-        // Saving the video's thumbnail
-        setThumbnail(transcriptData.thumbnail)
-        setCachedThumbnail(transcriptData.thumbnail)
-        setCachedTranscript(transcriptData.transcript)
-        transcript = transcriptData.transcript
+        setCachedTranscript(transcript) // Saves the transcript
 
       } else {
         setThumbnail(cachedThumbnail)
@@ -92,7 +89,7 @@ function App() {
       
 
       // Summarize the transcript
-      const summaryRes = await fetch("http://127.0.0.1:5000/summarize", {
+      const summaryRes = await fetch("https://video-summarizer-backend-2jda.onrender.com/summarize", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({transcript: transcript, level})
