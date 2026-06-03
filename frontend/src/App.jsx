@@ -4,8 +4,6 @@ import youtubeLogo from './assets/youtube-logo.png'
 import remarkGfm from 'remark-gfm'
 import '@fontsource/inter'
 import '@fontsource/poppins'
-import { YoutubeTranscript } from 'youtube-transcript'
-
 
 function App() {
 
@@ -71,17 +69,20 @@ function App() {
         // Makes it faster if we want to change levels for the same video
       if (!transcript) {
 
-        // Get the transcript directly from the browser
-        const transcriptData = await YoutubeTranscript.fetchTranscript(url)
-        transcript = transcriptData.map(entry => entry.text).join(' ')
+        // Get the transcript directly from Flask backend
+        const transcriptResponse = await fetch(`https://video-summarizer-backend-2jda.onrender.com/transcript?url=${encodeURIComponent(url)}`)
+        const transcriptData = await transcriptRes.json()
 
-        const videoId = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1]
-        if (videoId) {
-          const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-          setThumbnail(thumbnail)
-          setCachedThumbnail(thumbnail) // Saves the thumbnail for the current request
+        if (transcriptData.error) {
+          setError(transcriptData.error)
+          setLoading(false)
+          return
         }
-        setCachedTranscript(transcript) // Saves the transcript
+
+        setThumbnail(transcriptData.thumbnail)
+        setCachedThumbnail(transcriptData.thumbnail)
+        setCachedTranscript(transcriptData.transcript)
+        transcript = transcriptData.transcript
 
       } else {
         setThumbnail(cachedThumbnail)

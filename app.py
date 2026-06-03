@@ -9,10 +9,7 @@ import os
 import edge_tts, asyncio, io
 import tempfile
 import subprocess
-
-#
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.proxies import WebshareProxyConfig
+import requests
 
 
 load_dotenv()
@@ -33,7 +30,6 @@ def extract_video_id(url):
     # Gets the transcript using YouTubeTranscriptApi library
     # Joins all the transcript chunks into a large string
     # Returns the string as JSON
-
 @app.route('/transcript', methods=['GET'])
 def get_transcript():
     url = request.args.get('url')
@@ -47,14 +43,13 @@ def get_transcript():
         return jsonify({'error': 'Invalid YouTube URL'}), 400
     
     try:
-        ytt_api = YouTubeTranscriptApi(
-            proxy_config=WebshareProxyConfig(
-                proxy_username="",
-                proxy_password="",
-            )
+        response = requests.get(
+            f'https://api.supadata.ai/v1/youtube/transcript',
+            headers={'x-api-key': os.getenv('SUPADATA_API_KEY')},
+            params={'videoId': video_id}
         )
-        transcript_data = ytt_api.fetch(video_id)
-        full_transcript = ' '.join([entry.text for entry in transcript_data])
+        data = response.json()
+        full_transcript = ' '.join([entry['text'] for entry in data['content']])
         return jsonify({
             'transcript': full_transcript,
             'thumbnail': f'https://img.youtube.com/vi/{video_id}/maxresdefault.jpg'
