@@ -263,7 +263,7 @@ return (
                
                 <div className="summary-content">
 
-                    {/* {summary && (
+                    {summary && (
                       <button
                         onClick={handleReadAloud}
                         style={{
@@ -282,7 +282,7 @@ return (
                       >
                         🔊 Read Aloud
                       </button>
-                    )} */}
+                    )}
 
 
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>

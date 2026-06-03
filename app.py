@@ -115,8 +115,8 @@ def speak():
     clean = emoji_pattern.sub('', clean)
 
     try:
-        tmp_path = r"C:\Users\saith\OneDrive\Documents\CS Summer Projects\YouTube-Video-Summarizer\temp_audio.mp3"
-
+        tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp_audio.mp3')
+        
         # Use edge-tts Python API directly instead of subprocess
         async def generate():
             communicate = edge_tts.Communicate(clean, voice="en-US-AndrewNeural")
