@@ -109,7 +109,7 @@ function App() {
 
       // Error handling if the request fails (e.g. Flask isn't running)
     } catch (err) {
-      setError("ERROR: Make sure Flask is running!")
+      setError("ERROR: Please try again")
     }
 
     setLoading(false)
