@@ -109,6 +109,7 @@ function App() {
 
       // Error handling if the request fails (e.g. Flask isn't running)
     } catch (err) {
+      console.log("Error: ", err)
       setError("ERROR: Please try again")
     }
 
