@@ -11,6 +11,9 @@ import tempfile
 import subprocess
 import requests
 
+import nest_asyncio
+nest_asyncio.apply()
+
 
 load_dotenv()
 
@@ -76,6 +79,9 @@ def summarize():
     - Beginner: Assume no background knowledge & explain in simple terms. Include analogies & emojis to keep it engaging. Focus on the "what" and "why"
     - Intermediate: Assume some background knowledge. Cover key concepts & their significance. Avoid over-explaining basics. 
     - Expert: Expert-level knowledge assumed. Use precise technical terminology, highlight nuanced insights & methods. 
+    
+    Use proper markdown headings (##, ###) for all section titles. Do not use bold (**text**) for titles or subheadings.
+
     Here is the transcript: {transcript}"""
 
     try: 
@@ -103,14 +109,21 @@ def speak():
     summary = data.get('summary', '')
 
     # Cleaning the text
-    clean = re.sub(r'[#*`]', '', summary)
-    clean = re.sub(r'\n+', ' ', clean)
+    clean = re.sub(r'#{1,6}\s*(.*)', r'\1.', summary)  # add period after headers
+    clean = re.sub(r'(\d)️⃣', r'\1.', clean)  # Replace keycap emojis but keep the number
+    clean = re.sub(r'[*`_~]', '', clean)  # remove remaining markdown
+    clean = re.sub(r'\|', ' ', clean)  # replace table pipes
+    clean = re.sub(r'\n+', ' ', clean)  # replace newlines with spaces
+    clean = re.sub(r'\s+', ' ', clean)  # collapse multiple spaces
     emoji_pattern = re.compile("["
         u"\U0001F600-\U0001F64F"
         u"\U0001F300-\U0001F5FF"
         u"\U0001F680-\U0001F9FF"
         u"\U00002700-\U000027BF"
         u"\U0001FA00-\U0001FA6F"
+        u"\u0030-\u0039\u20E3"  # keycap numbers 0-9
+        u"\u2600-\u26FF"        # miscellaneous symbols
+        u"\u2700-\u27BF"        # dingbats
         "]+", flags=re.UNICODE)
     clean = emoji_pattern.sub('', clean)
 
@@ -119,8 +132,17 @@ def speak():
         
         # Use edge-tts Python API directly instead of subprocess
         async def generate():
+
+            # Debugging
+            print(f"Temp path: {tmp_path}")
+            print(f"Clean text length: {len(clean)}")
+
             communicate = edge_tts.Communicate(clean, voice="en-US-AndrewNeural")
             await communicate.save(tmp_path)
+
+            print(f"File exists after save: {os.path.exists(tmp_path)}")
+            print(f"File size after save: {os.path.getsize(tmp_path)}")
+
 
         asyncio.run(generate())
 
