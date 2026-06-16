@@ -16,10 +16,7 @@ function App() {
   const [thumbnail, setThumbnail] = useState("")
   const [cachedTranscript, setCachedTranscript] = useState("")
   const [cachedThumbnail, setCachedThumbnail] = useState("")
-  const [audioUrl, setAudioUrl] = useState("")
   const [isPlaying, setIsPlaying] = useState(false)
-  const [audioPlayer, setAudioPlayer] = useState(null)
-  const [audioLoading, setAudioLoading] = useState(false)
 
   const handleURLChange = (e) => {
     setUrl(e.target.value)
@@ -27,42 +24,21 @@ function App() {
     setThumbnail("")
   }
 
-  const generateAudio = async (summaryText) => {
-
-    setAudioLoading(true)
-
-    // Sends the summary from the /summary endpoint to /speak endpoint
-    const response = await fetch("https://video-summarizer-backend-2jda.onrender.com/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ summary: summaryText })
-
-    })
-
-    // Convert the raw audio data to an audio player
-    const arrayBuffer = await response.arrayBuffer()
-    const blob = new Blob([arrayBuffer], {type: "audio/mpeg"})
-    const url = URL.createObjectURL(blob)
-    setAudioUrl(url)
-    setAudioLoading(false)
-
-  }
-
+// Using Web Speech API instead of edge-tts
 const handleReadAloud = () => {
-  if (!audioUrl) return
+  if (!summary) return
   
-  if (isPlaying && audioPlayer) {
-    audioPlayer.pause()
+  if (isPlaying) {
+    window.speechSynthesis.cancel()
     setIsPlaying(false)
-  } else if (audioPlayer) {
-    audioPlayer.play()
-    setIsPlaying(true)
   } else {
-    const audio = new Audio(audioUrl)
-    audio.play()
-    setAudioPlayer(audio)
+    const clean = summary.replace(/[#*`_~|]/g, '').replace(/\n+/g, ' ')
+    const utterance = new SpeechSynthesisUtterance(clean)
+    utterance.rate = 1
+    utterance.pitch = 1
+    utterance.onend = () => setIsPlaying(false)
+    window.speechSynthesis.speak(utterance)
     setIsPlaying(true)
-    audio.onended = () => setIsPlaying(false)
   }
 }
 
@@ -71,17 +47,15 @@ const handleReadAloud = () => {
   const handleSubmit = async () => {
     
     // Stop playing the old audio when "Summarize" is clicked
-    if (audioPlayer) {
-      audioPlayer.pause()
-      audioPlayer.currentTime = 0
+    if (isPlaying) {
+      window.speechSynthesis.cancel()
+      setIsPlaying(false)
     }
     
     setLoading(true)
     setError("")
     setSummary("")
     setThumbnail("")
-    setAudioUrl("")
-    setAudioPlayer(null)
     setIsPlaying(false)
 
     try {
@@ -127,7 +101,6 @@ const handleReadAloud = () => {
       } else {
         console.log("summary", summaryData.summary)
         setSummary(summaryData.summary)
-        generateAudio(summaryData.summary)
       }
 
       // Error handling if the request fails (e.g. Flask isn't running)
@@ -293,16 +266,16 @@ return (
                           fontSize: "16px",
                           borderRadius: "10px",
                           border: "1px solid #ff0000",
-                          backgroundColor: audioLoading ? "transparent" : isPlaying ? "#cc0000" : "red",
+                          backgroundColor: isPlaying ? "#cc0000" : "red",
                           color: audioLoading ? "red" : "black",
-                          cursor: audioLoading || !audioUrl ? "not-allowed" : "pointer",
+                          cursor: "pointer",
                           fontWeight: "600",
                           width: "100%",
                           marginTop: "10px",
                           fontFamily: "'Poppins', sans-serif"
                         }}
                       >
-                        {audioLoading ? "⏳ Preparing Audio..." : isPlaying ? "⏸ Pause" : "🔊 Read Aloud"}
+                        {isPlaying ? "⏸ Pause" : "🔊 Read Aloud"}
                       </button>
                     )}
 
