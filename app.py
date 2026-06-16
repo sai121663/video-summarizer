@@ -6,13 +6,9 @@ import re
 import anthropic
 from dotenv import load_dotenv
 import os
-import edge_tts, asyncio, io
-import tempfile
+import io
 import subprocess
 import requests
-
-import nest_asyncio
-nest_asyncio.apply()
 
 
 load_dotenv()
@@ -98,61 +94,6 @@ def summarize():
     except Exception as e:
         print(f"ERROR: {e}")
         return jsonify({'error': str(e)}), 500
-
-# ENDPOINT #3: Convert summary to audio
-@app.route('/speak', methods=['POST', 'OPTIONS'])
-def speak():
-    if request.method == 'OPTIONS':
-        return '', 200
-
-    data = request.get_json()
-    summary = data.get('summary', '')
-
-    # Cleaning the text
-    clean = re.sub(r'#{1,6}\s*(.*)', r'\1.', summary)  # add period after headers
-    clean = re.sub(r'(\d)️⃣', r'\1.', clean)  # Replace keycap emojis but keep the number
-    clean = re.sub(r'[*`_~]', '', clean)  # remove remaining markdown
-    clean = re.sub(r'\|', ' ', clean)  # replace table pipes
-    clean = re.sub(r'\n+', ' ', clean)  # replace newlines with spaces
-    clean = re.sub(r'\s+', ' ', clean)  # collapse multiple spaces
-    emoji_pattern = re.compile("["
-        u"\U0001F600-\U0001F64F"
-        u"\U0001F300-\U0001F5FF"
-        u"\U0001F680-\U0001F9FF"
-        u"\U00002700-\U000027BF"
-        u"\U0001FA00-\U0001FA6F"
-        u"\u0030-\u0039\u20E3"  # keycap numbers 0-9
-        u"\u2600-\u26FF"        # miscellaneous symbols
-        u"\u2700-\u27BF"        # dingbats
-        "]+", flags=re.UNICODE)
-    clean = emoji_pattern.sub('', clean)
-
-    try:
-        tmp_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp_audio.mp3')
-        
-        # Use edge-tts Python API directly instead of subprocess
-        async def generate():
-
-            communicate = edge_tts.Communicate(clean, voice="en-US-AndrewNeural")
-            await communicate.save(tmp_path)
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        try: 
-            loop.run_until_complete(generate())
-        finally: 
-            loop.close()
-
-        with open(tmp_path, 'rb') as f:
-            audio_data = f.read()
-
-        return app.response_class(audio_data, mimetype="audio/mpeg")
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({'error': str(e)}), 500
-
 
 
 

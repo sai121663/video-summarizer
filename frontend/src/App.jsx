@@ -32,7 +32,7 @@ const handleReadAloud = () => {
     window.speechSynthesis.cancel()
     setIsPlaying(false)
   } else {
-    const clean = summary.replace(/[#*`_~|]/g, '').replace(/\n+/g, ' ')
+    const clean = cleanForSpeech(summary)
     const utterance = new SpeechSynthesisUtterance(clean)
     utterance.rate = 1
     utterance.pitch = 1
@@ -41,6 +41,18 @@ const handleReadAloud = () => {
     setIsPlaying(true)
   }
 }
+
+  const cleanForSpeech = (text) => {
+    let clean = text.replace(/#{1,6}\s*(.*)/g, '$1. ')  // headers
+    clean = clean.replace(/(\d)️⃣/g, '$1. ')             // keycap emojis
+    clean = clean.replace(/[*`_~|]/g, '')                // markdown symbols
+    clean = clean.replace(/\n+/g, ' ')                   // newlines
+    clean = clean.replace(/\s+/g, ' ')                   // extra spaces
+    clean = clean.replace(/[\u{1F600}-\u{1F64F}]/gu, '') // emojis
+    clean = clean.replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+    clean = clean.replace(/[\u{2700}-\u{27BF}]/gu, '')
+    return clean.trim()
+  }
 
   // Runs when "summarize" button is clicked
     // Calls the /transcript endpoint & then sends the transcript to the /summarize endpoint
