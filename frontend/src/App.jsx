@@ -279,7 +279,7 @@ return (
                           borderRadius: "10px",
                           border: "1px solid #ff0000",
                           backgroundColor: isPlaying ? "#cc0000" : "red",
-                          color: audioLoading ? "red" : "black",
+                          color: "black",
                           cursor: "pointer",
                           fontWeight: "600",
                           width: "100%",
