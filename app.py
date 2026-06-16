@@ -133,25 +133,20 @@ def speak():
         # Use edge-tts Python API directly instead of subprocess
         async def generate():
 
-            # Debugging
-            print(f"Temp path: {tmp_path}")
-            print(f"Clean text length: {len(clean)}")
-
             communicate = edge_tts.Communicate(clean, voice="en-US-AndrewNeural")
             await communicate.save(tmp_path)
 
-            print(f"File exists after save: {os.path.exists(tmp_path)}")
-            print(f"File size after save: {os.path.getsize(tmp_path)}")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-
-        asyncio.run(generate())
-
-        print(f"File size: {os.path.getsize(tmp_path)}")
+        try: 
+            loop.run_until_complete(generate())
+        finally: 
+            loop.close()
 
         with open(tmp_path, 'rb') as f:
             audio_data = f.read()
 
-        print(f"Audio size: {len(audio_data)}")
         return app.response_class(audio_data, mimetype="audio/mpeg")
 
     except Exception as e:
