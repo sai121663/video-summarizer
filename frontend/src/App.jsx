@@ -46,11 +46,13 @@ const handleReadAloud = () => {
     let clean = text.replace(/#{1,6}\s*(.*)/g, '$1. ')  // headers
     clean = clean.replace(/(\d)️⃣/g, '$1. ')             // keycap emojis
     clean = clean.replace(/[*`_~|]/g, '')                // markdown symbols
+    clean = clean.replace(/---/g, '. ')                    // horizontal rules
     clean = clean.replace(/\n+/g, ' ')                   // newlines
     clean = clean.replace(/\s+/g, ' ')                   // extra spaces
     clean = clean.replace(/[\u{1F600}-\u{1F64F}]/gu, '') // emojis
     clean = clean.replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
     clean = clean.replace(/[\u{2700}-\u{27BF}]/gu, '')
+    clean = clean.replace(/[\u{1F900}-\u{1FAFF}]/gu, '')  // supplemental symbols including mirror
     return clean.trim()
   }
 
