@@ -47,6 +47,13 @@ def get_transcript():
             headers={'x-api-key': os.getenv('SUPADATA_API_KEY')},
             params={'videoId': video_id}
         )
+
+        # Error handling
+        if response.status_code == 429: 
+            return jsonify({'error': 'Transcript service limit reached. Please try again later.'}), 429
+        elif response.status_code == 401: 
+            return jsonify({'error': 'Transcript service authentication failed.'}), 401
+
         data = response.json()
         full_transcript = ' '.join([entry['text'] for entry in data['content']])
         return jsonify({
@@ -91,6 +98,10 @@ def summarize():
         # Returning Claude's response as a JSON for React to display
         return jsonify({'summary': message.content[0].text})
 
+    except anthropic.RateLimitError: 
+        return jsonify({'error': 'AI service limit reached. Please try again later.'}), 429
+    except anthropic.AuthenticationError: 
+        return jsonify({'error': 'AI service authentication failed.'}), 401
     except Exception as e:
         print(f"ERROR: {e}")
         return jsonify({'error': str(e)}), 500
