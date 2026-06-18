@@ -53,6 +53,7 @@ const handleReadAloud = () => {
     clean = clean.replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
     clean = clean.replace(/[\u{2700}-\u{27BF}]/gu, '')
     clean = clean.replace(/[\u{1F900}-\u{1FAFF}]/gu, '')  // supplemental symbols including mirror
+    clean = clean.replace(/—/g, ', ')  // em dash to comma
     return clean.trim()
   }
 
