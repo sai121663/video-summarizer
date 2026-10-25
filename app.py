@@ -91,7 +91,7 @@ def summarize():
         # Sending the message to Claude & waiting for a response
         message = client.messages.create(
             model="claude-haiku-4-5",
-            max_tokens=1024,
+            max_tokens=4096,
             messages=[{"role": "user", "content": prompt}]
         )
 
