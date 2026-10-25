@@ -227,8 +227,6 @@ return (
                 lineHeight: "1.7",
                 border: "1px solid #333",
                 fontFamily: "'Inter', 'sans-serif'",
-                minHeight: "200px",
-                overflowY: "auto"
               }}>
 
                 <style>{`
