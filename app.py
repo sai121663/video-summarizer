@@ -77,13 +77,16 @@ def summarize():
     client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 
     # Instruction prompt that will be fed to Claude
-    prompt = f"""Summarize this video for a {level} audience.
-    
-    - Beginner: Assume no background knowledge & explain in simple terms. Include analogies & emojis to keep it engaging. Focus on the "what" and "why"
-    - Intermediate: Assume some background knowledge. Cover key concepts & their significance. Avoid over-explaining basics. 
-    - Expert: Expert-level knowledge assumed. Use precise technical terminology, highlight nuanced insights & methods. 
-    
-    Use proper markdown headings (##, ###) for all section titles. Do not use bold (**text**) for titles or subheadings.
+    prompt = f"""Summarize this video for a {level} audience. Be concise — your entire response must be under 700 words.
+
+    - Beginner: Assume no background knowledge & explain in simple terms. Include analogies & emojis. Focus on the "what" and "why".
+    - Intermediate: Assume some background knowledge. Cover key concepts & their significance. Avoid over-explaining basics.
+    - Expert: Expert-level knowledge assumed. Use precise technical terminology and highlight key insights.
+
+    Formatting rules:
+    - Use markdown headings (##, ###) for section titles. Do not use bold (**text**) for titles or subheadings.
+    - Do NOT use LaTeX or math notation (no $$...$$, no \\mathbb, no \\gamma etc). Write any formulas in plain readable text instead.
+    - Always end with a complete sentence. Never cut off mid-thought.
 
     Here is the transcript: {transcript}"""
 
